@@ -1,19 +1,18 @@
-import { defineConfig } from "sanity"
-import { deskTool } from "sanity/desk"
-import { visionTool } from "@sanity/vision"
-import { schemaTypes } from "./schemaTypes"
+import {defineConfig} from 'sanity'
+import {structureTool} from 'sanity/structure'
+import {visionTool} from '@sanity/vision'
+import {schemaTypes} from './schemaTypes'
 
 export default defineConfig({
-  name: "default",
-  title: "vercel-object-app",
+  name: 'default',
+  title: 'vercel-object-app',
 
-  projectId: process.env.SANITY_STUDIO_PROJECT_ID!,
-  dataset: process.env.SANITY_STUDIO_DATASET!,
+  projectId: 'iq7aan8g',
+  dataset: 'production',
 
-  plugins: [deskTool(), visionTool()],
+  plugins: [structureTool(), visionTool()],
 
   schema: {
     types: schemaTypes,
   },
 })
-
