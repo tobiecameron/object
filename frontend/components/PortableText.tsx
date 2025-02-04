@@ -1,5 +1,6 @@
 import { PortableText as PortableTextComponent } from "@portabletext/react"
 import Image from "next/image"
+import { urlForImage } from "../lib/sanity"
 
 const components = {
   types: {
@@ -8,19 +9,21 @@ const components = {
         return null
       }
       return (
-        <Image
-          alt={value.alt || " "}
-          loading="lazy"
-          src={`https://cdn.sanity.io/images/${process.env.NEXT_PUBLIC_SANITY_PROJECT_ID}/${process.env.NEXT_PUBLIC_SANITY_DATASET}/${value.asset._ref.replace("image-", "").replace("-jpg", ".jpg")}`}
-          width={500}
-          height={300}
-        />
+        <div className="relative w-full h-96 my-6">
+          <Image
+            className="object-cover rounded-lg"
+            src={urlForImage(value).url() || "/placeholder.svg"}
+            alt={value.alt || " "}
+            fill
+            sizes="(max-width: 768px) 100vw, 50vw"
+          />
+        </div>
       )
     },
   },
 }
 
-export default function PortableText({ content }: { content: any }) {
+export function PortableText({ content }: { content: any }) {
   return <PortableTextComponent value={content} components={components} />
 }
 
