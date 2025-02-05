@@ -36,7 +36,34 @@ export default defineType({
             },
           ],
         },
+        {
+          type: "object",
+          name: "model3d",
+          title: "3D Model",
+          fields: [
+            {
+              name: "title",
+              title: "Title",
+              type: "string",
+            },
+            {
+              name: "model",
+              title: "3D Model File",
+              type: "file",
+              options: {
+                accept: ".glb,.gltf",
+              },
+            },
+            {
+              name: "alt",
+              title: "Alternative text",
+              type: "string",
+              description: "Important for accessibility and SEO",
+            },
+          ],
+        },
       ],
     }),
   ],
 })
+
