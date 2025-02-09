@@ -15,7 +15,7 @@ function SimpleShape() {
 }
 
 function ComplexModel({ url }: { url: string }) {
-  const { scene, nodes, materials } = useGLTF(url)
+  const { scene } = useGLTF(url)
   const [modelError, setModelError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -28,10 +28,9 @@ function ComplexModel({ url }: { url: string }) {
     try {
       new URL(url)
       console.log("ComplexModel: URL is valid")
-    } catch (e) {
-      console.error("ComplexModel: Invalid URL format", e)
+    } catch (error) {
+      console.error("ComplexModel: Invalid URL format", error)
       setModelError("Invalid URL format")
-      return
     }
   }, [url])
 
@@ -69,7 +68,7 @@ export function Model3DViewer({ title, url, isSimpleShape = false }: Model3DView
         return `${urlObj.origin}${path}.gltf`
       }
       return urlObj.origin + path
-    } catch (e) {
+    } catch (error) {
       console.error("Invalid URL:", inputUrl)
       return ""
     }
@@ -109,5 +108,6 @@ export function Model3DViewer({ title, url, isSimpleShape = false }: Model3DView
   )
 }
 
+// Replace with your actual default model path or remove if not needed
 useGLTF.preload("/path/to/default-model.glb")
 

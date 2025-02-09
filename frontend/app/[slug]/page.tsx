@@ -1,6 +1,5 @@
 import { client } from "../../lib/sanity"
 import { PortableText } from "../../components/PortableText"
-import { Model3DViewer } from "../../components/Model3DViewer"
 import Link from "next/link"
 import type { PortableTextBlock } from "@portabletext/types"
 
@@ -58,8 +57,6 @@ export default async function Page({ params }: { params: { slug: string } }) {
     )
   }
 
-  console.log("Model Asset Details:", page.modelAsset)
-
   return (
     <div className="container mx-auto px-4 py-8">
       <Link href="/" className="text-blue-500 hover:underline mb-4 inline-block">
@@ -69,12 +66,6 @@ export default async function Page({ params }: { params: { slug: string } }) {
       <div className="prose lg:prose-xl max-w-none">
         <PortableText value={page.content} />
       </div>
-      {page.modelAsset && (
-        <div className="mt-8">
-          <h2 className="text-2xl font-bold mb-4">3D Model</h2>
-          <Model3DViewer url={page.modelAsset.url} title={`3D Model: ${page.modelAsset.originalFilename}`} />
-        </div>
-      )}
     </div>
   )
 }

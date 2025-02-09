@@ -40,20 +40,18 @@ const components = {
 
       return (
         <div className="my-6">
-          <div
-            className="relative"
-            style={{
-              width: `${width}px`,
-              height: `${height}px`,
-              maxWidth: "100%",
-            }}
-          >
+          <div className="image-container" style={{ maxWidth: `${width}px`, margin: "0 auto" }}>
             <Image
-              className="object-cover rounded-lg"
               src={imageUrl || "/placeholder.svg"}
-              alt={value.alt || " "}
-              fill
-              sizes={`(max-width: 768px) 100vw, ${width}px`}
+              alt={value.alt || ""}
+              width={width}
+              height={height}
+              className="rounded-lg"
+              style={{
+                width: "100%",
+                height: "auto",
+                objectFit: "contain",
+              }}
             />
           </div>
         </div>
