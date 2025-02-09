@@ -1,11 +1,34 @@
 import { PortableText as PortableTextComponent } from "@portabletext/react"
+import type { PortableTextBlock } from "@portabletext/types"
 import Image from "next/image"
 import { urlForImage } from "../lib/sanity"
 import { Model3DViewer } from "./Model3DViewer"
 
+interface ImageValue {
+  asset?: {
+    _ref: string
+  }
+  alt?: string
+}
+
+interface Model3DValue {
+  title?: string
+  model?: {
+    asset?: {
+      _ref: string
+    }
+  }
+  alt?: string
+}
+
+interface SimpleModel3DValue {
+  title?: string
+  color?: string
+}
+
 const components = {
   types: {
-    image: ({ value }: any) => {
+    image: ({ value }: { value: ImageValue }) => {
       if (!value?.asset?._ref) {
         return null
       }
@@ -21,7 +44,7 @@ const components = {
         </div>
       )
     },
-    model3d: ({ value }: any) => {
+    model3d: ({ value }: { value: Model3DValue }) => {
       if (!value?.model?.asset?._ref) {
         return null
       }
@@ -33,10 +56,21 @@ const components = {
         </div>
       )
     },
+    simpleModel3d: ({ value }: { value: SimpleModel3DValue }) => {
+      return (
+        <div className="my-6">
+          <Model3DViewer color={value.color} title={value.title} />
+        </div>
+      )
+    },
   },
 }
 
-export function PortableText({ content }: { content: any }) {
-  return <PortableTextComponent value={content} components={components} />
+export interface PortableTextProps {
+  value: PortableTextBlock[]
+}
+
+export function PortableText({ value }: PortableTextProps) {
+  return <PortableTextComponent value={value} components={components} />
 }
 

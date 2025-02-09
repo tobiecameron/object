@@ -62,6 +62,24 @@ export default defineType({
             },
           ],
         },
+        {
+          type: "object",
+          name: "simpleModel3d",
+          title: "Simple 3D Model",
+          fields: [
+            {
+              name: "title",
+              title: "Title",
+              type: "string",
+            },
+            {
+              name: "color",
+              title: "Color",
+              type: "string",
+              description: "Enter a valid CSS color (e.g., 'red', '#00ff00', 'rgb(0,0,255)')",
+            },
+          ],
+        },
       ],
     }),
   ],

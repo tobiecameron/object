@@ -1,27 +1,113 @@
 "use client"
 
+import { Suspense, useState, useEffect } from "react"
 import { Canvas } from "@react-three/fiber"
 import { OrbitControls, useGLTF } from "@react-three/drei"
-import { Suspense } from "react"
+import { ErrorBoundary } from "react-error-boundary"
 
-function Model({ url }: { url: string }) {
-  const { scene } = useGLTF(url)
-  return <primitive object={scene} />
+function SimpleShape() {
+  return (
+    <mesh>
+      <boxGeometry args={[1, 1, 1]} />
+      <meshStandardMaterial color="hotpink" />
+    </mesh>
+  )
 }
 
-export function Model3DViewer({ url, title }: { url: string; title?: string }) {
+function ComplexModel({ url }: { url: string }) {
+  const { scene, nodes, materials } = useGLTF(url)
+  const [modelError, setModelError] = useState<string | null>(null)
+
+  useEffect(() => {
+    console.log("ComplexModel: Attempting to load URL:", url)
+    if (!url) {
+      setModelError("No URL provided")
+      return
+    }
+
+    try {
+      new URL(url)
+      console.log("ComplexModel: URL is valid")
+    } catch (e) {
+      console.error("ComplexModel: Invalid URL format", e)
+      setModelError("Invalid URL format")
+      return
+    }
+  }, [url])
+
+  if (modelError) {
+    throw new Error(modelError)
+  }
+
+  return <primitive object={scene} scale={[0.01, 0.01, 0.01]} />
+}
+
+function LoadingFallback() {
   return (
-    <div className="w-full h-[400px] relative">
-      <Canvas camera={{ position: [0, 0, 5] }}>
-        <Suspense fallback={null}>
-          <ambientLight intensity={0.5} />
-          <directionalLight position={[10, 10, 5]} intensity={1} />
-          <Model url={url} />
-          <OrbitControls enableZoom={true} />
-        </Suspense>
-      </Canvas>
+    <mesh>
+      <sphereGeometry args={[0.5, 32, 32]} />
+      <meshStandardMaterial color="yellow" />
+    </mesh>
+  )
+}
+
+interface Model3DViewerProps {
+  title?: string
+  url: string
+  isSimpleShape?: boolean
+}
+
+export function Model3DViewer({ title, url, isSimpleShape = false }: Model3DViewerProps) {
+  const cleanUrl = (inputUrl: string) => {
+    if (!inputUrl) return ""
+    try {
+      const urlObj = new URL(inputUrl)
+      const path = urlObj.pathname
+      // Check if the URL already has a file extension
+      if (!/\.(gltf|glb)$/i.test(path)) {
+        // If not, append .gltf as default
+        return `${urlObj.origin}${path}.gltf`
+      }
+      return urlObj.origin + path
+    } catch (e) {
+      console.error("Invalid URL:", inputUrl)
+      return ""
+    }
+  }
+
+  const cleanedUrl = cleanUrl(url)
+  console.log("Loading model from:", cleanedUrl)
+
+  return (
+    <div className="w-full h-[400px] relative bg-gray-200">
+      <ErrorBoundary
+        fallbackRender={({ error }) => (
+          <div className="absolute inset-0 flex items-center justify-center bg-red-100 text-red-500 p-4 text-center">
+            {error.message}
+          </div>
+        )}
+        onError={(error) => {
+          console.error("Error in Model3DViewer:", error)
+        }}
+      >
+        <Canvas
+          camera={{ position: [0, 0, 5] }}
+          onCreated={({ gl }) => {
+            gl.setClearColor("#f8f8f8", 0)
+          }}
+        >
+          <Suspense fallback={<LoadingFallback />}>
+            <ambientLight intensity={0.5} />
+            <directionalLight position={[10, 10, 5]} intensity={1} />
+            {isSimpleShape ? <SimpleShape /> : cleanedUrl ? <ComplexModel url={cleanedUrl} /> : <SimpleShape />}
+            <OrbitControls enableZoom={true} minDistance={2} maxDistance={10} />
+          </Suspense>
+        </Canvas>
+      </ErrorBoundary>
       {title && <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white p-2 text-center">{title}</div>}
     </div>
   )
 }
+
+useGLTF.preload("/path/to/default-model.glb")
 
