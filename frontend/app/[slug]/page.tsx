@@ -69,18 +69,10 @@ export default async function Page({ params }: { params: { slug: string } }) {
       <div className="prose lg:prose-xl max-w-none">
         <PortableText value={page.content} />
       </div>
-      <div className="mt-8">
-        <h2 className="text-2xl font-bold mb-4">Simple Shape (Litmus Test)</h2>
-        <Model3DViewer url="" title="Simple Cube" isSimpleShape={true} />
-      </div>
-      {page.modelAsset ? (
+      {page.modelAsset && (
         <div className="mt-8">
-          <h2 className="text-2xl font-bold mb-4">Complex 3D Model</h2>
+          <h2 className="text-2xl font-bold mb-4">3D Model</h2>
           <Model3DViewer url={page.modelAsset.url} title={`3D Model: ${page.modelAsset.originalFilename}`} />
-        </div>
-      ) : (
-        <div className="mt-8 p-4 bg-yellow-100 text-yellow-800 rounded">
-          No complex 3D model available for this page.
         </div>
       )}
     </div>

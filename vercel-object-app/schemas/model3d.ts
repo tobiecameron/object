@@ -13,7 +13,7 @@ export default defineType({
     }),
     defineField({
       name: "model",
-      title: "3D Model",
+      title: "3D Model File",
       type: "file",
       options: {
         accept: ".glb,.gltf",
@@ -21,10 +21,11 @@ export default defineType({
       },
       validation: (Rule) =>
         Rule.required().custom((value) => {
-          if (!value || !value.asset || !value.asset.extension) {
+          if (!value || !value.asset) {
             return "File is required"
           }
-          if (!["glb", "gltf"].includes(value.asset.extension.toLowerCase())) {
+          const extension = value.asset.extension?.toLowerCase()
+          if (!extension || !["glb", "gltf"].includes(extension)) {
             return "File must be a .glb or .gltf"
           }
           return true
@@ -36,34 +37,6 @@ export default defineType({
       type: "string",
       description: "Important for accessibility and SEO",
       validation: (Rule) => Rule.required(),
-    }),
-    defineField({
-      name: "description",
-      title: "Description",
-      type: "text",
-      rows: 3,
-      description: "A brief description of the 3D model",
-    }),
-    defineField({
-      name: "initialScale",
-      title: "Initial Scale",
-      type: "number",
-      description: "Initial scale of the 3D model (default: 1)",
-      initialValue: 1,
-    }),
-    defineField({
-      name: "allowZoom",
-      title: "Allow Zoom",
-      type: "boolean",
-      description: "Allow users to zoom in/out of the 3D model",
-      initialValue: true,
-    }),
-    defineField({
-      name: "autoRotate",
-      title: "Auto Rotate",
-      type: "boolean",
-      description: "Automatically rotate the 3D model",
-      initialValue: false,
     }),
   ],
   preview: {
