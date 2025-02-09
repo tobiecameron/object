@@ -9,6 +9,8 @@ interface ImageValue {
     _ref: string
   }
   alt?: string
+  width?: number
+  height?: number
 }
 
 interface Model3DValue {
@@ -32,15 +34,28 @@ const components = {
       if (!value?.asset?._ref) {
         return null
       }
+      const imageUrl = urlForImage(value).url() || "/placeholder.svg"
+      const width = value.width || 800 // Use default if not specified
+      const height = value.height || 600 // Use default if not specified
+
       return (
-        <div className="relative w-full h-96 my-6">
-          <Image
-            className="object-cover rounded-lg"
-            src={urlForImage(value).url() || "/placeholder.svg"}
-            alt={value.alt || " "}
-            fill
-            sizes="(max-width: 768px) 100vw, 50vw"
-          />
+        <div className="my-6">
+          <div
+            className="relative"
+            style={{
+              width: `${width}px`,
+              height: `${height}px`,
+              maxWidth: "100%",
+            }}
+          >
+            <Image
+              className="object-cover rounded-lg"
+              src={imageUrl || "/placeholder.svg"}
+              alt={value.alt || " "}
+              fill
+              sizes={`(max-width: 768px) 100vw, ${width}px`}
+            />
+          </div>
         </div>
       )
     },

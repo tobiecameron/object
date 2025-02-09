@@ -35,6 +35,20 @@ export default defineType({
               title: "Alternative text",
               description: "Important for SEO and accessibility.",
             },
+            {
+              name: "width",
+              type: "number",
+              title: "Width",
+              description: "Specify the width in pixels",
+              initialValue: 800, // Default width
+            },
+            {
+              name: "height",
+              type: "number",
+              title: "Height",
+              description: "Specify the height in pixels",
+              initialValue: 600, // Default height
+            },
           ],
         },
         model3d,
