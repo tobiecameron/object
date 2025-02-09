@@ -52,7 +52,7 @@ function LoadingFallback() {
 
 interface Model3DViewerProps {
   title?: string
-  url: string
+  url?: string
   isSimpleShape?: boolean
 }
 
@@ -74,7 +74,7 @@ export function Model3DViewer({ title, url, isSimpleShape = false }: Model3DView
     }
   }
 
-  const cleanedUrl = cleanUrl(url)
+  const cleanedUrl = url ? cleanUrl(url) : ""
   console.log("Loading model from:", cleanedUrl)
 
   return (
@@ -98,7 +98,7 @@ export function Model3DViewer({ title, url, isSimpleShape = false }: Model3DView
           <Suspense fallback={<LoadingFallback />}>
             <ambientLight intensity={0.5} />
             <directionalLight position={[10, 10, 5]} intensity={1} />
-            {isSimpleShape ? <SimpleShape /> : cleanedUrl ? <ComplexModel url={cleanedUrl} /> : <SimpleShape />}
+            {isSimpleShape || !cleanedUrl ? <SimpleShape /> : <ComplexModel url={cleanedUrl} />}
             <OrbitControls enableZoom={true} minDistance={2} maxDistance={10} />
           </Suspense>
         </Canvas>

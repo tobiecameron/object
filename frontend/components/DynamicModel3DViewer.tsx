@@ -6,7 +6,12 @@ const Model3DViewer = dynamic(() => import("./Model3DViewer").then((mod) => mod.
   ssr: false,
 })
 
-export function DynamicModel3DViewer({ title }: { title?: string }) {
-  return <Model3DViewer title={title} />
+interface DynamicModel3DViewerProps {
+  title?: string
+  url?: string
+}
+
+export function DynamicModel3DViewer({ title, url }: DynamicModel3DViewerProps) {
+  return <Model3DViewer title={title} url={url} />
 }
 
