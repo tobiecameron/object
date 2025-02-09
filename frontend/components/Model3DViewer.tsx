@@ -69,7 +69,7 @@ export function Model3DViewer({ title, url, isSimpleShape = false }: Model3DView
       }
       return urlObj.origin + path
     } catch (error) {
-      console.error("Invalid URL:", inputUrl)
+      console.error("Invalid URL:", inputUrl, error)
       return ""
     }
   }
@@ -85,8 +85,8 @@ export function Model3DViewer({ title, url, isSimpleShape = false }: Model3DView
             {error.message}
           </div>
         )}
-        onError={(error) => {
-          console.error("Error in Model3DViewer:", error)
+        onError={(error: Error) => {
+          console.error("Error in Model3DViewer:", error.message, error.stack)
         }}
       >
         <Canvas
