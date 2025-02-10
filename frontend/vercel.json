@@ -2,6 +2,14 @@
   "buildCommand": "next build",
   "outputDirectory": ".next",
   "framework": "nextjs",
-  "devCommand": "next dev"
+  "devCommand": "next dev",
+  "version": 2,
+  "routes": [
+    {
+      "src": "/(.*)",
+      "headers": { "cache-control": "s-maxage=1, stale-while-revalidate" },
+      "dest": "/$1"
+    }
+  ]
 }
 
