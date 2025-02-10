@@ -62,7 +62,7 @@ function ComplexModel({ url }: { url: string }) {
 function LoadingCube() {
   const meshRef = useRef<THREE.Mesh>(null)
 
-  useFrame((state) => {
+  useFrame(() => {
     if (meshRef.current) {
       meshRef.current.rotation.x += 0.01
       meshRef.current.rotation.y += 0.01
