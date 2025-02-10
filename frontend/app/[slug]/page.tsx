@@ -49,8 +49,6 @@ export default async function Page({ params }: { params: { slug: string } }) {
     )
   }
 
-  console.log("Rendering page with content:", page.content)
-
   return (
     <div className="container mx-auto px-4 py-8">
       <Link href="/" className="text-blue-500 hover:underline mb-4 inline-block">

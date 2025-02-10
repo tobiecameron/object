@@ -3,11 +3,10 @@ import type { PortableTextBlock } from "@portabletext/types"
 import Image from "next/image"
 import { urlForImage } from "../lib/sanity"
 import { Model3DViewer } from "./Model3DViewer"
+import type { SanityAsset } from "@sanity/image-url/lib/types/types"
 
 interface ImageValue {
-  asset?: {
-    _ref: string
-  }
+  asset?: SanityAsset
   alt?: string
   width?: number
   height?: number
@@ -16,9 +15,7 @@ interface ImageValue {
 interface Model3DValue {
   title?: string
   model?: {
-    asset?: {
-      _ref: string
-    }
+    asset?: SanityAsset
   }
   alt?: string
 }

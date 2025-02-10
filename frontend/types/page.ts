@@ -1,5 +1,5 @@
 import type { PortableTextBlock } from "@portabletext/types"
-import type { SanityImageAsset } from "@sanity/image-url/lib/types/types"
+import type { SanityAsset } from "@sanity/image-url/lib/types/types"
 import type { Model3DValue } from "@/components/PortableText"
 
 export interface Page {
@@ -9,6 +9,6 @@ export interface Page {
   }
   content: PortableTextBlock[]
   model3d?: Model3DValue
-  mainImage?: SanityImageAsset
+  mainImage?: SanityAsset
 }
 
