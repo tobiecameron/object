@@ -46,6 +46,13 @@ export default defineType({
       description: "Important for accessibility and SEO",
       validation: (Rule) => Rule.required(),
     }),
+    // Add a new field for the extracted buffer file
+    defineField({
+      name: "buffer",
+      title: "Buffer File",
+      type: "file",
+      hidden: true, // This field will be populated automatically
+    }),
   ],
   preview: {
     select: {
