@@ -12,19 +12,24 @@ export async function unzipAndSaveGLTF(zipFileAsset: SanityAsset, client: Sanity
   const arrayBuffer = await response.arrayBuffer()
 
   const zip = await JSZip.loadAsync(arrayBuffer)
-  const gltfFile = zip.file(/(\.gltf|\.glb)$/i)[0]
+  const gltfFile = zip.file(/(\.gltf)$/i)[0]
+  const binFile = zip.file(/(\.bin)$/i)[0]
 
-  if (!gltfFile) {
-    throw new Error("No GLTF or GLB file found in the zip archive")
+  if (!gltfFile || !binFile) {
+    throw new Error("Both GLTF and BIN files are required in the zip archive")
   }
 
   const gltfContent = await gltfFile.async("arraybuffer")
-  const gltfFileName = gltfFile.name
+  const binContent = await binFile.async("arraybuffer")
 
-  const extractedFile = await client.assets.upload("file", new Blob([gltfContent]), {
-    filename: gltfFileName,
+  const gltfAsset = await client.assets.upload("file", new Blob([gltfContent]), {
+    filename: gltfFile.name,
   })
 
-  return extractedFile
+  const binAsset = await client.assets.upload("file", new Blob([binContent]), {
+    filename: binFile.name,
+  })
+
+  return { gltfAsset, binAsset }
 }
 

@@ -56,15 +56,22 @@ export default defineConfig({
           const assetDoc = await context
             .getClient()
             .fetch(`*[_type == "sanity.fileAsset" && _id == $assetRef][0]`, { assetRef })
-          const extractedGLTF = await unzipAndSaveGLTF(assetDoc, context.getClient())
+          const { gltfAsset, binAsset } = await unzipAndSaveGLTF(assetDoc, context.getClient())
 
           return {
             ...document,
             model: {
-              ...document.model,
+              _type: "file",
               asset: {
                 _type: "reference",
-                _ref: extractedGLTF._id,
+                _ref: gltfAsset._id,
+              },
+            },
+            buffer: {
+              _type: "file",
+              asset: {
+                _type: "reference",
+                _ref: binAsset._id,
               },
             },
           }
