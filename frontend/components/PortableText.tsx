@@ -12,7 +12,7 @@ interface ImageValue {
   height?: number
 }
 
-interface Model3DValue {
+export interface Model3DValue {
   title?: string
   model?: {
     asset?: SanityAsset
