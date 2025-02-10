@@ -34,8 +34,8 @@ const components = {
         return null
       }
       const imageUrl = urlForImage(value).url() || "/placeholder.svg"
-      const width = value.width || 800 // Use default if not specified
-      const height = value.height || 600 // Use default if not specified
+      const width = value.width || 800
+      const height = value.height || 600
 
       return (
         <div className="my-6">

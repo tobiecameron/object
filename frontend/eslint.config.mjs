@@ -13,10 +13,13 @@ const eslintConfig = [
   ...compat.extends("next/core-web-vitals"),
   {
     files: ["**/*.ts", "**/*.tsx"],
+    plugins: ["@typescript-eslint"],
+    parser: "@typescript-eslint/parser",
     rules: {
-      // Add any custom rules here
       "react/react-in-jsx-scope": "off",
       "react/prop-types": "off",
+      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/explicit-module-boundary-types": "off",
     },
   },
   {

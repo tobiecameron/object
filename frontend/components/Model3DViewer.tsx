@@ -2,8 +2,11 @@
 
 import { Suspense, useState, useEffect } from "react"
 import { Canvas } from "@react-three/fiber"
-import { OrbitControls, useGLTF } from "@react-three/drei"
+import { OrbitControls } from "@react-three/drei"
 import { ErrorBoundary } from "react-error-boundary"
+import { loadModel } from "../utils/modelLoader"
+import type * as THREE from "three"
+import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader"
 
 function SimpleShape({ color = "hotpink" }: { color?: string }) {
   return (
@@ -15,37 +18,29 @@ function SimpleShape({ color = "hotpink" }: { color?: string }) {
 }
 
 function ComplexModel({ url }: { url: string }) {
-  const [modelError, setModelError] = useState<string | null>(null)
+  const [model, setModel] = useState<THREE.Group | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    console.log("ComplexModel: Attempting to load URL:", url)
-    if (!url) {
-      setModelError("No URL provided")
-      return
-    }
-
-    // Attempt to fetch the model to check if it's accessible
-    fetch(url, { method: "HEAD" })
-      .then((response) => {
-        if (!response.ok) {
-          console.error("Model URL is not accessible:", url, "Status:", response.status)
-          setModelError(`Model file not accessible (Status: ${response.status})`)
-        } else {
-          console.log("Model URL is accessible:", url)
-        }
+    loadModel(url)
+      .then((gltf: GLTF) => {
+        setModel(gltf.scene)
       })
-      .catch((error) => {
-        console.error("ComplexModel: Error checking URL", error)
-        setModelError(`Error loading model: ${error.message}`)
+      .catch((err: Error) => {
+        console.error("Error loading model:", err)
+        setError("Failed to load 3D model")
       })
   }, [url])
 
-  if (modelError) {
-    throw new Error(modelError)
+  if (error) {
+    return <SimpleShape color="red" />
   }
 
-  const { scene } = useGLTF(url)
-  return <primitive object={scene} scale={[0.01, 0.01, 0.01]} />
+  if (!model) {
+    return <SimpleShape color="yellow" />
+  }
+
+  return <primitive object={model} scale={[0.01, 0.01, 0.01]} />
 }
 
 function LoadingFallback() {
@@ -69,17 +64,11 @@ export function Model3DViewer({ title, url, color, isSimpleShape = false }: Mode
 
   useEffect(() => {
     if (url) {
-      const cleanUrl = (inputUrl: string) => {
+      const cleanUrl = (inputUrl: string): string => {
         if (!inputUrl) return ""
         try {
           const urlObj = new URL(inputUrl)
-          const path = urlObj.pathname
-          // Check if the URL already has a file extension
-          if (!/\.(gltf|glb)$/i.test(path)) {
-            // If not, append .glb as default
-            return `${urlObj.origin}${path}.glb`
-          }
-          return urlObj.origin + path
+          return urlObj.toString()
         } catch (error) {
           console.error("Invalid URL:", inputUrl, error)
           return ""
@@ -95,7 +84,7 @@ export function Model3DViewer({ title, url, color, isSimpleShape = false }: Mode
   return (
     <div className="w-full h-[400px] relative bg-gray-200">
       <ErrorBoundary
-        fallbackRender={({ error }) => (
+        fallbackRender={({ error }: { error: Error }) => (
           <div className="absolute inset-0 flex items-center justify-center bg-red-100 text-red-500 p-4 text-center">
             Error loading 3D model: {error.message}
           </div>
@@ -122,7 +111,4 @@ export function Model3DViewer({ title, url, color, isSimpleShape = false }: Mode
     </div>
   )
 }
-
-// Preload default model if needed
-// useGLTF.preload("/path/to/default-model.glb")
 
