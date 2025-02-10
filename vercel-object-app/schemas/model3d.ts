@@ -16,18 +16,33 @@ export default defineType({
       title: "3D Model File",
       type: "file",
       options: {
-        accept: ".glb,.gltf",
+        accept: "model/gltf-binary,model/gltf+json,.glb,.gltf",
         storeOriginalFilename: true,
       },
       validation: (Rule) =>
         Rule.required().custom((value) => {
-          if (!value || !value.asset) {
+          if (!value?.asset?._ref) {
             return "File is required"
           }
-          const extension = value.asset.extension?.toLowerCase()
-          if (!extension || !["glb", "gltf"].includes(extension)) {
-            return "File must be a .glb or .gltf"
+
+          // Check the asset reference format
+          const assetRef = value.asset._ref
+          if (!assetRef.startsWith("file-")) {
+            return "Invalid file reference"
           }
+
+          // Extract the extension from the asset reference
+          const extension = assetRef.split("-").pop()?.toLowerCase()
+
+          // Log for debugging
+          console.log("File extension:", extension)
+          console.log("Asset reference:", assetRef)
+
+          // Check if it's either glb or gltf
+          if (!extension || !["glb", "gltf"].includes(extension)) {
+            return "File must be a .glb or .gltf format"
+          }
+
           return true
         }),
     }),
@@ -42,13 +57,12 @@ export default defineType({
   preview: {
     select: {
       title: "title",
-      media: "model",
+      filename: "model.asset.originalFilename",
     },
-    prepare({ title, media }) {
+    prepare({ title, filename }) {
       return {
         title: title || "Untitled 3D Model",
-        subtitle: media?.asset?.originalFilename || "No file uploaded",
-        media: media,
+        subtitle: filename || "No file selected",
       }
     },
   },
