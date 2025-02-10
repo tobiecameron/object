@@ -22,20 +22,15 @@ function ComplexModel({ url }: { url: string }) {
 
   useEffect(() => {
     if (modelRef.current) {
-      // Calculate bounding box
       const box = new THREE.Box3().setFromObject(modelRef.current)
       const size = box.getSize(new THREE.Vector3())
       const center = box.getCenter(new THREE.Vector3())
 
-      // Adjust scale
       const maxDim = Math.max(size.x, size.y, size.z)
       const scale = 2 / maxDim
       modelRef.current.scale.setScalar(scale)
-
-      // Center the model
       modelRef.current.position.sub(center.multiplyScalar(scale))
 
-      // Position camera to fit the model
       if (camera instanceof THREE.PerspectiveCamera) {
         const fov = camera.fov * (Math.PI / 180)
         const distance = Math.abs(maxDim / Math.sin(fov / 2)) * 1.5
@@ -52,7 +47,7 @@ function ComplexModel({ url }: { url: string }) {
         cameraPosition: camera.position,
       })
     }
-  }, [modelRef]) // Removed camera from dependencies
+  }, [camera])
 
   useFrame(() => {
     if (modelRef.current) {
@@ -64,11 +59,20 @@ function ComplexModel({ url }: { url: string }) {
   return <primitive ref={modelRef} object={scene} />
 }
 
-function LoadingFallback() {
+function LoadingCube() {
+  const meshRef = useRef<THREE.Mesh>(null)
+
+  useFrame((state) => {
+    if (meshRef.current) {
+      meshRef.current.rotation.x += 0.01
+      meshRef.current.rotation.y += 0.01
+    }
+  })
+
   return (
-    <mesh>
-      <sphereGeometry args={[0.5, 32, 32]} />
-      <meshStandardMaterial color="yellow" />
+    <mesh ref={meshRef}>
+      <boxGeometry args={[1, 1, 1]} />
+      <meshStandardMaterial color="blue" />
     </mesh>
   )
 }
@@ -103,7 +107,7 @@ export function Model3DViewer({ title, url, color, isSimpleShape = false }: Mode
         }}
       >
         <Canvas camera={{ position: [0, 0, 5], fov: 50 }}>
-          <Suspense fallback={<LoadingFallback />}>
+          <Suspense fallback={<LoadingCube />}>
             <ambientLight intensity={0.5} />
             <directionalLight position={[10, 10, 5]} intensity={1} />
             {isSimpleShape || !modelUrl ? <SimpleShape color={color} /> : <ComplexModel url={modelUrl} />}
