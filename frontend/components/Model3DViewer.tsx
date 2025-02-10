@@ -15,7 +15,6 @@ function SimpleShape({ color = "hotpink" }: { color?: string }) {
 }
 
 function ComplexModel({ url }: { url: string }) {
-  const { scene } = useGLTF(url)
   const [modelError, setModelError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -25,19 +24,27 @@ function ComplexModel({ url }: { url: string }) {
       return
     }
 
-    try {
-      new URL(url)
-      console.log("ComplexModel: URL is valid")
-    } catch (error) {
-      console.error("ComplexModel: Invalid URL format", error)
-      setModelError("Invalid URL format")
-    }
+    // Attempt to fetch the model to check if it's accessible
+    fetch(url, { method: "HEAD" })
+      .then((response) => {
+        if (!response.ok) {
+          console.error("Model URL is not accessible:", url, "Status:", response.status)
+          setModelError(`Model file not accessible (Status: ${response.status})`)
+        } else {
+          console.log("Model URL is accessible:", url)
+        }
+      })
+      .catch((error) => {
+        console.error("ComplexModel: Error checking URL", error)
+        setModelError(`Error loading model: ${error.message}`)
+      })
   }, [url])
 
   if (modelError) {
     throw new Error(modelError)
   }
 
+  const { scene } = useGLTF(url)
   return <primitive object={scene} scale={[0.01, 0.01, 0.01]} />
 }
 
@@ -58,32 +65,39 @@ interface Model3DViewerProps {
 }
 
 export function Model3DViewer({ title, url, color, isSimpleShape = false }: Model3DViewerProps) {
-  const cleanUrl = (inputUrl: string) => {
-    if (!inputUrl) return ""
-    try {
-      const urlObj = new URL(inputUrl)
-      const path = urlObj.pathname
-      // Check if the URL already has a file extension
-      if (!/\.(gltf|glb)$/i.test(path)) {
-        // If not, append .gltf as default
-        return `${urlObj.origin}${path}.gltf`
-      }
-      return urlObj.origin + path
-    } catch (error) {
-      console.error("Invalid URL:", inputUrl, error)
-      return ""
-    }
-  }
+  const [modelUrl, setModelUrl] = useState<string | null>(null)
 
-  const cleanedUrl = url ? cleanUrl(url) : ""
-  console.log("Loading model from:", cleanedUrl)
+  useEffect(() => {
+    if (url) {
+      const cleanUrl = (inputUrl: string) => {
+        if (!inputUrl) return ""
+        try {
+          const urlObj = new URL(inputUrl)
+          const path = urlObj.pathname
+          // Check if the URL already has a file extension
+          if (!/\.(gltf|glb)$/i.test(path)) {
+            // If not, append .glb as default
+            return `${urlObj.origin}${path}.glb`
+          }
+          return urlObj.origin + path
+        } catch (error) {
+          console.error("Invalid URL:", inputUrl, error)
+          return ""
+        }
+      }
+
+      const cleanedUrl = cleanUrl(url)
+      console.log("Cleaned model URL:", cleanedUrl)
+      setModelUrl(cleanedUrl)
+    }
+  }, [url])
 
   return (
     <div className="w-full h-[400px] relative bg-gray-200">
       <ErrorBoundary
         fallbackRender={({ error }) => (
           <div className="absolute inset-0 flex items-center justify-center bg-red-100 text-red-500 p-4 text-center">
-            {error.message}
+            Error loading 3D model: {error.message}
           </div>
         )}
         onError={(error: Error) => {
@@ -99,7 +113,7 @@ export function Model3DViewer({ title, url, color, isSimpleShape = false }: Mode
           <Suspense fallback={<LoadingFallback />}>
             <ambientLight intensity={0.5} />
             <directionalLight position={[10, 10, 5]} intensity={1} />
-            {isSimpleShape || !cleanedUrl ? <SimpleShape color={color} /> : <ComplexModel url={cleanedUrl} />}
+            {isSimpleShape || !modelUrl ? <SimpleShape color={color} /> : <ComplexModel url={modelUrl} />}
             <OrbitControls enableZoom={true} minDistance={2} maxDistance={10} />
           </Suspense>
         </Canvas>
@@ -109,6 +123,6 @@ export function Model3DViewer({ title, url, color, isSimpleShape = false }: Mode
   )
 }
 
-// Replace with your actual default model path or remove if not needed
-useGLTF.preload("/path/to/default-model.glb")
+// Preload default model if needed
+// useGLTF.preload("/path/to/default-model.glb")
 

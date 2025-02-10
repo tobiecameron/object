@@ -15,7 +15,9 @@ interface ImageValue {
 export interface Model3DValue {
   title?: string
   model?: {
-    asset?: SanityAsset
+    asset?: {
+      _ref: string
+    }
   }
   alt?: string
 }
@@ -58,7 +60,8 @@ const components = {
       if (!value?.model?.asset?._ref) {
         return null
       }
-      const modelUrl = `https://cdn.sanity.io/files/${process.env.NEXT_PUBLIC_SANITY_PROJECT_ID}/production/${value.model.asset._ref.replace("file-", "").replace("-glb", ".glb")}`
+      const modelUrl = `https://cdn.sanity.io/files/${process.env.NEXT_PUBLIC_SANITY_PROJECT_ID}/${process.env.NEXT_PUBLIC_SANITY_DATASET}/${value.model.asset._ref.replace("file-", "").replace("-glb", ".glb")}`
+      console.log("Constructed model URL:", modelUrl)
 
       return (
         <div className="my-6">
