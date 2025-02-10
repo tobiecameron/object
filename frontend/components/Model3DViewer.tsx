@@ -20,27 +20,36 @@ function SimpleShape({ color = "hotpink" }: { color?: string }) {
 function ComplexModel({ url }: { url: string }) {
   const [model, setModel] = useState<THREE.Group | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    console.log("ComplexModel: Loading model from URL:", url)
+    setIsLoading(true)
+    setError(null)
+
     loadModel(url)
       .then((gltf: GLTF) => {
+        console.log("Model loaded successfully:", gltf)
         setModel(gltf.scene)
+        setIsLoading(false)
       })
       .catch((err: Error) => {
         console.error("Error loading model:", err)
-        setError("Failed to load 3D model")
+        setError(err.message)
+        setIsLoading(false)
       })
   }, [url])
 
   if (error) {
+    console.error("Model loading error:", error)
     return <SimpleShape color="red" />
   }
 
-  if (!model) {
+  if (isLoading || !model) {
     return <SimpleShape color="yellow" />
   }
 
-  return <primitive object={model} scale={[0.01, 0.01, 0.01]} />
+  return <primitive object={model} scale={[0.01, 0.01, 0.01]} position={[0, 0, 0]} rotation={[0, 0, 0]} />
 }
 
 function LoadingFallback() {
@@ -64,20 +73,8 @@ export function Model3DViewer({ title, url, color, isSimpleShape = false }: Mode
 
   useEffect(() => {
     if (url) {
-      const cleanUrl = (inputUrl: string): string => {
-        if (!inputUrl) return ""
-        try {
-          const urlObj = new URL(inputUrl)
-          return urlObj.toString()
-        } catch (error) {
-          console.error("Invalid URL:", inputUrl, error)
-          return ""
-        }
-      }
-
-      const cleanedUrl = cleanUrl(url)
-      console.log("Cleaned model URL:", cleanedUrl)
-      setModelUrl(cleanedUrl)
+      console.log("Model3DViewer: Received URL:", url)
+      setModelUrl(url)
     }
   }, [url])
 

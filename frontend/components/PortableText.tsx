@@ -58,9 +58,20 @@ const components = {
     },
     model3d: ({ value }: { value: Model3DValue }) => {
       if (!value?.model?.asset?._ref) {
+        console.log("No model asset reference found:", value)
         return null
       }
-      const modelUrl = `https://cdn.sanity.io/files/${process.env.NEXT_PUBLIC_SANITY_PROJECT_ID}/${process.env.NEXT_PUBLIC_SANITY_DATASET}/${value.model.asset._ref.replace("file-", "").replace("-glb", ".glb")}`
+
+      const matches = value.model.asset._ref.match(/^file-(.+)-(?:glb|gltf|zip)$/)
+      if (!matches) {
+        console.error("Invalid asset reference format:", value.model.asset._ref)
+        return null
+      }
+
+      const fileId = matches[1]
+      const extension = value.model.asset._ref.split("-").pop() || ""
+      const modelUrl = `/api/model-proxy?fileId=${fileId}&extension=${extension}`
+
       console.log("Constructed model URL:", modelUrl)
 
       return (

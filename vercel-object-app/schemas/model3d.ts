@@ -16,7 +16,7 @@ export default defineType({
       title: "3D Model File",
       type: "file",
       options: {
-        accept: "model/gltf-binary,model/gltf+json,.glb,.gltf",
+        accept: "model/gltf-binary,model/gltf+json,.glb,.gltf,.zip",
         storeOriginalFilename: true,
       },
       validation: (Rule) =>
@@ -25,22 +25,15 @@ export default defineType({
             return "File is required"
           }
 
-          // Check the asset reference format
           const assetRef = value.asset._ref
           if (!assetRef.startsWith("file-")) {
             return "Invalid file reference"
           }
 
-          // Extract the extension from the asset reference
           const extension = assetRef.split("-").pop()?.toLowerCase()
 
-          // Log for debugging
-          console.log("File extension:", extension)
-          console.log("Asset reference:", assetRef)
-
-          // Check if it's either glb or gltf
-          if (!extension || !["glb", "gltf"].includes(extension)) {
-            return "File must be a .glb or .gltf format"
+          if (!extension || !["glb", "gltf", "zip"].includes(extension)) {
+            return "File must be a .glb, .gltf, or .zip format"
           }
 
           return true
