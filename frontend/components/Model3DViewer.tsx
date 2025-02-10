@@ -1,12 +1,10 @@
 "use client"
 
-import { Suspense, useState, useEffect } from "react"
-import { Canvas } from "@react-three/fiber"
-import { OrbitControls } from "@react-three/drei"
+import { Suspense, useState, useEffect, useRef } from "react"
+import { Canvas, useFrame, useThree } from "@react-three/fiber"
+import { OrbitControls, useGLTF } from "@react-three/drei"
 import { ErrorBoundary } from "react-error-boundary"
-import { loadModel } from "../utils/modelLoader"
-import type * as THREE from "three"
-import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader"
+import * as THREE from "three" // Fixed import
 
 function SimpleShape({ color = "hotpink" }: { color?: string }) {
   return (
@@ -18,38 +16,48 @@ function SimpleShape({ color = "hotpink" }: { color?: string }) {
 }
 
 function ComplexModel({ url }: { url: string }) {
-  const [model, setModel] = useState<THREE.Group | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const { scene } = useGLTF(url)
+  const modelRef = useRef<THREE.Group>(null)
+  const { camera } = useThree()
 
   useEffect(() => {
-    console.log("ComplexModel: Loading model from URL:", url)
-    setIsLoading(true)
-    setError(null)
+    if (modelRef.current) {
+      // Calculate bounding box
+      const box = new THREE.Box3().setFromObject(modelRef.current)
+      const size = box.getSize(new THREE.Vector3())
+      const center = box.getCenter(new THREE.Vector3())
 
-    loadModel(url)
-      .then((gltf: GLTF) => {
-        console.log("Model loaded successfully:", gltf)
-        setModel(gltf.scene)
-        setIsLoading(false)
+      // Adjust scale
+      const maxDim = Math.max(size.x, size.y, size.z)
+      const scale = 2 / maxDim
+      modelRef.current.scale.setScalar(scale)
+
+      // Center the model
+      modelRef.current.position.sub(center.multiplyScalar(scale))
+
+      // Position camera to fit the model
+      const fov = camera.fov * (Math.PI / 180)
+      const distance = Math.abs(maxDim / Math.sin(fov / 2)) * 1.5
+      camera.position.set(0, 0, distance)
+      camera.lookAt(0, 0, 0)
+      camera.updateProjectionMatrix()
+
+      console.log("Model loaded and adjusted:", {
+        scale,
+        position: modelRef.current.position,
+        cameraPosition: camera.position,
       })
-      .catch((err: Error) => {
-        console.error("Error loading model:", err)
-        setError(err.message)
-        setIsLoading(false)
-      })
-  }, [url])
+    }
+  }, [modelRef, camera]) // Fixed useEffect dependencies
 
-  if (error) {
-    console.error("Model loading error:", error)
-    return <SimpleShape color="red" />
-  }
+  useFrame(() => {
+    if (modelRef.current) {
+      console.log("Model position:", modelRef.current.position)
+      console.log("Model scale:", modelRef.current.scale)
+    }
+  })
 
-  if (isLoading || !model) {
-    return <SimpleShape color="yellow" />
-  }
-
-  return <primitive object={model} scale={[0.01, 0.01, 0.01]} position={[0, 0, 0]} rotation={[0, 0, 0]} />
+  return <primitive ref={modelRef} object={scene} />
 }
 
 function LoadingFallback() {
@@ -79,7 +87,7 @@ export function Model3DViewer({ title, url, color, isSimpleShape = false }: Mode
   }, [url])
 
   return (
-    <div className="w-full h-[400px] relative bg-gray-200">
+    <div className="w-full h-[600px] relative bg-white">
       <ErrorBoundary
         fallbackRender={({ error }: { error: Error }) => (
           <div className="absolute inset-0 flex items-center justify-center bg-red-100 text-red-500 p-4 text-center">
@@ -90,17 +98,14 @@ export function Model3DViewer({ title, url, color, isSimpleShape = false }: Mode
           console.error("Error in Model3DViewer:", error.message, error.stack)
         }}
       >
-        <Canvas
-          camera={{ position: [0, 0, 5] }}
-          onCreated={({ gl }) => {
-            gl.setClearColor("#f8f8f8", 0)
-          }}
-        >
+        <Canvas camera={{ position: [0, 0, 5], fov: 50 }}>
           <Suspense fallback={<LoadingFallback />}>
             <ambientLight intensity={0.5} />
             <directionalLight position={[10, 10, 5]} intensity={1} />
             {isSimpleShape || !modelUrl ? <SimpleShape color={color} /> : <ComplexModel url={modelUrl} />}
-            <OrbitControls enableZoom={true} minDistance={2} maxDistance={10} />
+            <OrbitControls enableZoom={true} />
+            <axesHelper args={[5]} />
+            <gridHelper args={[10, 10]} />
           </Suspense>
         </Canvas>
       </ErrorBoundary>
