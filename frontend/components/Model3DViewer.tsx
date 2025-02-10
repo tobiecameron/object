@@ -4,7 +4,7 @@ import { Suspense, useState, useEffect, useRef } from "react"
 import { Canvas, useFrame, useThree } from "@react-three/fiber"
 import { OrbitControls, useGLTF } from "@react-three/drei"
 import { ErrorBoundary } from "react-error-boundary"
-import * as THREE from "three" // Fixed import
+import * as THREE from "three"
 
 function SimpleShape({ color = "hotpink" }: { color?: string }) {
   return (
@@ -36,11 +36,15 @@ function ComplexModel({ url }: { url: string }) {
       modelRef.current.position.sub(center.multiplyScalar(scale))
 
       // Position camera to fit the model
-      const fov = camera.fov * (Math.PI / 180)
-      const distance = Math.abs(maxDim / Math.sin(fov / 2)) * 1.5
-      camera.position.set(0, 0, distance)
-      camera.lookAt(0, 0, 0)
-      camera.updateProjectionMatrix()
+      if (camera instanceof THREE.PerspectiveCamera) {
+        const fov = camera.fov * (Math.PI / 180)
+        const distance = Math.abs(maxDim / Math.sin(fov / 2)) * 1.5
+        camera.position.set(0, 0, distance)
+        camera.lookAt(0, 0, 0)
+        camera.updateProjectionMatrix()
+      } else {
+        console.warn("Camera is not a PerspectiveCamera. Skipping camera adjustment.")
+      }
 
       console.log("Model loaded and adjusted:", {
         scale,
@@ -48,7 +52,7 @@ function ComplexModel({ url }: { url: string }) {
         cameraPosition: camera.position,
       })
     }
-  }, [modelRef, camera]) // Fixed useEffect dependencies
+  }, [modelRef]) // Removed camera from dependencies
 
   useFrame(() => {
     if (modelRef.current) {
@@ -109,7 +113,7 @@ export function Model3DViewer({ title, url, color, isSimpleShape = false }: Mode
           </Suspense>
         </Canvas>
       </ErrorBoundary>
-      {title && <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white p-2 text-center">{title}</div>}
+      {/* {title && <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white p-2 text-center">{title}</div>} */}
     </div>
   )
 }
