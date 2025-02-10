@@ -5,11 +5,11 @@ import { Canvas } from "@react-three/fiber"
 import { OrbitControls, useGLTF } from "@react-three/drei"
 import { ErrorBoundary } from "react-error-boundary"
 
-function SimpleShape() {
+function SimpleShape({ color = "hotpink" }: { color?: string }) {
   return (
     <mesh>
       <boxGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial color="hotpink" />
+      <meshStandardMaterial color={color} />
     </mesh>
   )
 }
@@ -53,10 +53,11 @@ function LoadingFallback() {
 interface Model3DViewerProps {
   title?: string
   url?: string
+  color?: string
   isSimpleShape?: boolean
 }
 
-export function Model3DViewer({ title, url, isSimpleShape = false }: Model3DViewerProps) {
+export function Model3DViewer({ title, url, color, isSimpleShape = false }: Model3DViewerProps) {
   const cleanUrl = (inputUrl: string) => {
     if (!inputUrl) return ""
     try {
@@ -98,7 +99,7 @@ export function Model3DViewer({ title, url, isSimpleShape = false }: Model3DView
           <Suspense fallback={<LoadingFallback />}>
             <ambientLight intensity={0.5} />
             <directionalLight position={[10, 10, 5]} intensity={1} />
-            {isSimpleShape || !cleanedUrl ? <SimpleShape /> : <ComplexModel url={cleanedUrl} />}
+            {isSimpleShape || !cleanedUrl ? <SimpleShape color={color} /> : <ComplexModel url={cleanedUrl} />}
             <OrbitControls enableZoom={true} minDistance={2} maxDistance={10} />
           </Suspense>
         </Canvas>

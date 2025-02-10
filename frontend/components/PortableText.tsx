@@ -72,7 +72,7 @@ const components = {
     simpleModel3d: ({ value }: { value: SimpleModel3DValue }) => {
       return (
         <div className="my-6">
-          <Model3DViewer color={value.color} title={value.title} />
+          <Model3DViewer color={value.color} title={value.title} isSimpleShape={true} />
         </div>
       )
     },
@@ -84,6 +84,7 @@ export interface PortableTextProps {
 }
 
 export function PortableText({ value }: PortableTextProps) {
+  console.log("PortableText component rendered with value:", value)
   return <PortableTextComponent value={value} components={components} />
 }
 

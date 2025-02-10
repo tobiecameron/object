@@ -30,6 +30,8 @@ async function getPage(slug: string): Promise<Page | null> {
       { slug },
     )
 
+    console.log("Fetched page data:", result)
+
     if (result && result.modelAsset) {
       const { _id, extension } = result.modelAsset
       result.modelAsset.url = `https://cdn.sanity.io/files/${process.env.NEXT_PUBLIC_SANITY_PROJECT_ID}/${process.env.NEXT_PUBLIC_SANITY_DATASET}/${_id.replace("file-", "").replace("-glb", "")}.${extension}`
@@ -56,6 +58,8 @@ export default async function Page({ params }: { params: { slug: string } }) {
       </div>
     )
   }
+
+  console.log("Rendering page with content:", page.content)
 
   return (
     <div className="container mx-auto px-4 py-8">
