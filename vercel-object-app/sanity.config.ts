@@ -31,7 +31,7 @@ export default defineConfig({
       assetSources: ["media"],
       directUploads: true,
       // Explicitly allow these MIME types and file extensions
-      acceptedFiles: [".glb", ".gltf", "model/gltf-binary", "model/gltf+json"],
+      acceptedFiles: [".glb", ".gltf", ".zip", "model/gltf-binary", "model/gltf+json"],
     },
   },
 
