@@ -1,19 +1,12 @@
-import { createClient } from "@sanity/client"
 import JSZip from "jszip"
+import type { SanityClient } from "sanity"
 
 interface SanityAsset {
   url: string
   // Add other properties that might be present in the asset object
 }
 
-const client = createClient({
-  projectId: process.env.SANITY_STUDIO_PROJECT_ID,
-  dataset: process.env.SANITY_STUDIO_DATASET,
-  token: process.env.SANITY_STUDIO_TOKEN,
-  useCdn: false,
-})
-
-export async function unzipAndSaveGLTF(zipFileAsset: SanityAsset): Promise<any> {
+export async function unzipAndSaveGLTF(zipFileAsset: SanityAsset, client: SanityClient): Promise<any> {
   const zipFileUrl = zipFileAsset.url
   const response = await fetch(zipFileUrl)
   const arrayBuffer = await response.arrayBuffer()
