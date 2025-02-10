@@ -1,41 +1,31 @@
-import { client } from "../../lib/sanity"
-import { PortableText } from "../../components/PortableText"
+import { client } from "@/lib/sanity"
+import { PortableText } from "@/components/PortableText"
 import Link from "next/link"
-import type { PortableTextBlock } from "@portabletext/types"
-
-interface Page {
-  title: string
-  content: PortableTextBlock[]
-  modelAsset?: {
-    url: string
-    originalFilename: string
-    extension: string
-    _id: string
-  } | null
-}
+import type { Page } from "@/types/page"
 
 async function getPage(slug: string): Promise<Page | null> {
   try {
-    const result = await client.fetch(
+    const result = await client.fetch<Page>(
       `*[_type == "page" && slug.current == $slug][0]{
         title,
+        slug,
         content,
-        "modelAsset": model3d.model.asset->{
-          _id,
-          url,
-          originalFilename,
-          extension
+        mainImage,
+        "model3d": model3d{
+          title,
+          model{
+            asset->{
+              _id,
+              url
+            }
+          },
+          alt
         }
       }`,
       { slug },
     )
 
     console.log("Fetched page data:", result)
-
-    if (result && result.modelAsset) {
-      const { _id, extension } = result.modelAsset
-      result.modelAsset.url = `https://cdn.sanity.io/files/${process.env.NEXT_PUBLIC_SANITY_PROJECT_ID}/${process.env.NEXT_PUBLIC_SANITY_DATASET}/${_id.replace("file-", "").replace("-glb", "")}.${extension}`
-    }
 
     return result
   } catch (error) {
