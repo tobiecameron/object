@@ -87,7 +87,7 @@ export function Model3DViewer({ title, url, color, isSimpleShape = false }: Mode
   }, [url])
 
   return (
-    <div className="w-full h-[600px] relative bg-white">
+    <div className="w-full h-[80vh] relative bg-white">
       <ErrorBoundary
         fallbackRender={({ error }: { error: Error }) => (
           <div className="absolute inset-0 flex items-center justify-center bg-red-100 text-red-500 p-4 text-center">
