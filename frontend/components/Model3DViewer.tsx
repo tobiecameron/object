@@ -28,16 +28,45 @@ function LoadingCube() {
 }
 
 function SimpleShape({ color }: { color: string }) {
+  const { scene } = useThree()
+  const [envMap, setEnvMap] = useState<THREE.Texture | null>(null)
+
+  useEffect(() => {
+    new THREE.TextureLoader().load('/zwartkops_curve_afternoon_4k.exr', (texture) => {
+      texture.mapping = THREE.EquirectangularReflectionMapping
+      setEnvMap(texture)
+      scene.environment = texture
+    })
+  }, [scene])
+
   return (
     <mesh>
       <sphereGeometry args={[1, 32, 32]} />
-      <meshStandardMaterial color={color} />
+      <meshStandardMaterial color={color} envMap={envMap} />
     </mesh>
   )
 }
 
 function ComplexModel({ url }: { url: string }) {
   const { scene } = useGLTF(url)
+  const { scene: threeScene } = useThree()
+  const [envMap, setEnvMap] = useState<THREE.Texture | null>(null)
+
+  useEffect(() => {
+    new THREE.TextureLoader().load('/zwartkops_curve_afternoon_4k.exr', (texture) => {
+      texture.mapping = THREE.EquirectangularReflectionMapping
+      setEnvMap(texture)
+      threeScene.environment = texture
+    })
+  }, [threeScene])
+
+  scene.traverse((child: any) => {
+    if (child.isMesh) {
+      child.material.envMap = envMap
+      child.material.needsUpdate = true
+    }
+  })
+
   return <primitive object={scene} />
 }
 
