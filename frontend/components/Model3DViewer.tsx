@@ -60,10 +60,13 @@ function ComplexModel({ url }: { url: string }) {
     })
   }, [threeScene])
 
-  scene.traverse((child: any) => {
-    if (child.isMesh) {
-      child.material.envMap = envMap
-      child.material.needsUpdate = true
+  scene.traverse((child: THREE.Object3D) => {
+    if ((child as THREE.Mesh).isMesh) {
+      const meshChild = child as THREE.Mesh
+      if (meshChild.material && 'envMap' in meshChild.material) {
+        meshChild.material.envMap = envMap
+        meshChild.material.needsUpdate = true
+      }
     }
   })
 
