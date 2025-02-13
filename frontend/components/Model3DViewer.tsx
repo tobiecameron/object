@@ -63,15 +63,18 @@ function ComplexModel({ url }: { url: string }) {
   scene.traverse((child: THREE.Object3D) => {
     if ((child as THREE.Mesh).isMesh) {
       const meshChild = child as THREE.Mesh
-      if (meshChild.material && 'envMap' in meshChild.material) {
+      if (meshChild.material) {
         if (Array.isArray(meshChild.material)) {
           meshChild.material.forEach((material) => {
-            material.envMap = envMap
-            material.needsUpdate = true
+            if (material instanceof THREE.MeshStandardMaterial || material instanceof THREE.MeshPhysicalMaterial) {
+              material.envMap = envMap
+              material.needsUpdate = true
+            }
           })
         } else {
-          meshChild.material.envMap = envMap
-          meshChild.material.needsUpdate = true
+          const material = meshChild.material as THREE.MeshStandardMaterial | THREE.MeshPhysicalMaterial
+          material.envMap = envMap
+          material.needsUpdate = true
         }
       }
     }
