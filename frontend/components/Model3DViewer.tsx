@@ -40,7 +40,7 @@ function SimpleShape({ color }: { color: string }) {
   }, [scene])
 
   return (
-    <mesh>
+    <mesh position={[0, -0.5, 0]}>
       <sphereGeometry args={[1, 32, 32]} />
       <meshStandardMaterial color={color} envMap={envMap} />
     </mesh>
@@ -80,7 +80,7 @@ function ComplexModel({ url }: { url: string }) {
     }
   })
 
-  return <primitive object={scene} />
+  return <primitive object={scene} position={[0, -0.5, 0]} />
 }
 
 function Lighting() {
@@ -90,9 +90,19 @@ function Lighting() {
     scene.add(ambientLight)
     const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5)
     directionalLight.position.set(1, 2, 3)
+    directionalLight.castShadow = true
     scene.add(directionalLight)
   }, [scene])
   return null
+}
+
+function ShadowPlane() {
+  return (
+    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
+      <planeGeometry args={[10, 10]} />
+      <shadowMaterial opacity={0.5} />
+    </mesh>
+  )
 }
 
 export function Model3DViewer({ title, url, color = "white", isSimpleShape = false }: Model3DViewerProps) {
@@ -128,9 +138,10 @@ export function Model3DViewer({ title, url, color = "white", isSimpleShape = fal
           setError(error.message)
         }}
       >
-        <Canvas shadows camera={{ position: [0, 0, 5], fov: 50 }}>
+        <Canvas shadows camera={{ position: [0, 2, 5], fov: 50 }}>
           <Suspense fallback={<LoadingCube />}>
             <Lighting />
+            <ShadowPlane />
             {isSimpleShape || !modelUrl || error ? <SimpleShape color={color} /> : <ComplexModel url={modelUrl} />}
             <OrbitControls enableZoom={true} />
             <Environment files="/zwartkops_curve_afternoon_4k.exr" background />
