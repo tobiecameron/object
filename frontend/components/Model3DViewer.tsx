@@ -62,10 +62,16 @@ export function Model3DViewer({ title, url, color = "white", isSimpleShape = fal
   const [dofFocalLength, setDofFocalLength] = useState(0.02)
 
   useEffect(() => {
+    const envModelUrl = process.env.NEXT_PUBLIC_MODEL_URL
     if (url) {
       setModelUrl(url)
+    } else if (envModelUrl) {
+      setModelUrl(envModelUrl)
     }
   }, [url])
+
+  const sanityProjectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID
+  const sanityDataset = process.env.NEXT_PUBLIC_SANITY_DATASET
 
   return (
     <div className="fixed inset-0 z-[-1]">
@@ -85,7 +91,7 @@ export function Model3DViewer({ title, url, color = "white", isSimpleShape = fal
             <Lighting />
             {isSimpleShape || !modelUrl || error ? <SimpleShape color={color} /> : <ComplexModel url={modelUrl} />}
             <OrbitControls enableZoom={true} />
-            <Environment preset="studio" />
+            <Environment files="/zwartkops_curve_afternoon_4k.exr" background />
             {enablePostProcessing && (
               <EffectComposer>
                 <SSAO
@@ -124,7 +130,10 @@ export function Model3DViewer({ title, url, color = "white", isSimpleShape = fal
         setBloomIntensity={setBloomIntensity}
         setDofFocalLength={setDofFocalLength}
       />
+      <div>
+        <p>Sanity Project ID: {sanityProjectId}</p>
+        <p>Sanity Dataset: {sanityDataset}</p>
+      </div>
     </div>
   )
 }
-
