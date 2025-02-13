@@ -3,8 +3,10 @@
 import { Suspense, useState, useEffect, useRef } from "react"
 import { Canvas, useFrame, useThree } from "@react-three/fiber"
 import { OrbitControls, useGLTF, Environment } from "@react-three/drei"
+import { EffectComposer, SSAO, Bloom, DepthOfField } from "@react-three/postprocessing"
 import { ErrorBoundary } from "react-error-boundary"
 import * as THREE from "three"
+import ViewerSettings from "./ViewerSettings"
 
 function SimpleShape({ color = "hsl(var(--background))" }: { color?: string }) {
   return (
@@ -97,6 +99,10 @@ interface Model3DViewerProps {
 export function Model3DViewer({ title, url, color, isSimpleShape = false }: Model3DViewerProps) {
   const [modelUrl, setModelUrl] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [enablePostProcessing, setEnablePostProcessing] = useState(true)
+  const [ssaoIntensity, setSsaoIntensity] = useState(150)
+  const [bloomIntensity, setBloomIntensity] = useState(1.5)
+  const [dofFocalLength, setDofFocalLength] = useState(0.02)
 
   useEffect(() => {
     if (url) {
@@ -123,6 +129,13 @@ export function Model3DViewer({ title, url, color, isSimpleShape = false }: Mode
             {isSimpleShape || !modelUrl || error ? <SimpleShape color={color} /> : <ComplexModel url={modelUrl} />}
             <OrbitControls enableZoom={true} />
             <Environment preset="studio" />
+            {enablePostProcessing && (
+              <EffectComposer>
+                <SSAO radius={0.1} intensity={ssaoIntensity} luminanceInfluence={0.1} color="black" />
+                <Bloom luminanceThreshold={0.5} intensity={bloomIntensity} levels={9} mipmapBlur />
+                <DepthOfField focusDistance={0} focalLength={dofFocalLength} bokehScale={2} height={480} />
+              </EffectComposer>
+            )}
           </Suspense>
         </Canvas>
       </ErrorBoundary>
@@ -131,6 +144,16 @@ export function Model3DViewer({ title, url, color, isSimpleShape = false }: Mode
           {title}
         </div>
       )}
+      <ViewerSettings
+        enablePostProcessing={enablePostProcessing}
+        ssaoIntensity={ssaoIntensity}
+        bloomIntensity={bloomIntensity}
+        dofFocalLength={dofFocalLength}
+        setEnablePostProcessing={setEnablePostProcessing}
+        setSsaoIntensity={setSsaoIntensity}
+        setBloomIntensity={setBloomIntensity}
+        setDofFocalLength={setDofFocalLength}
+      />
     </div>
   )
 }
