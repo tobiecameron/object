@@ -23,7 +23,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <DynamicModel3DViewer />
+        <DynamicModel3DViewer isSimpleShape={true} color="hsl(var(--background))" />
         <div className="content-wrapper">{children}</div>
       </body>
     </html>

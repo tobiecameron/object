@@ -4,14 +4,33 @@ import { Suspense, useState, useEffect, useRef } from "react"
 import { Canvas, useFrame, useThree } from "@react-three/fiber"
 import { OrbitControls, useGLTF, Environment } from "@react-three/drei"
 import { EffectComposer, SSAO, Bloom, DepthOfField } from "@react-three/postprocessing"
+import { BlendFunction } from "postprocessing"
 import { ErrorBoundary } from "react-error-boundary"
 import * as THREE from "three"
 import ViewerSettings from "./ViewerSettings"
 
-function SimpleShape({ color = "hsl(var(--background))" }: { color?: string }) {
+type Model3DViewerProps = {
+  title?: string
+  url?: string
+  color?: string
+  isSimpleShape?: boolean
+}
+
+function LoadingCube() {
+  const mesh = useRef<THREE.Mesh>(null!)
+  useFrame((state, delta) => (mesh.current.rotation.x += delta))
   return (
-    <mesh castShadow>
+    <mesh ref={mesh}>
       <boxGeometry args={[1, 1, 1]} />
+      <meshStandardMaterial color="grey" />
+    </mesh>
+  )
+}
+
+function SimpleShape({ color }: { color: string }) {
+  return (
+    <mesh>
+      <sphereGeometry args={[1, 32, 32]} />
       <meshStandardMaterial color={color} />
     </mesh>
   )
@@ -19,84 +38,22 @@ function SimpleShape({ color = "hsl(var(--background))" }: { color?: string }) {
 
 function ComplexModel({ url }: { url: string }) {
   const { scene } = useGLTF(url)
-  const modelRef = useRef<THREE.Group>(null)
-  const { camera } = useThree()
-
-  useEffect(() => {
-    if (modelRef.current) {
-      const box = new THREE.Box3().setFromObject(modelRef.current)
-      const size = box.getSize(new THREE.Vector3())
-      const center = box.getCenter(new THREE.Vector3())
-
-      const maxDim = Math.max(size.x, size.y, size.z)
-      const scale = 2 / maxDim
-      modelRef.current.scale.setScalar(scale)
-      modelRef.current.position.sub(center.multiplyScalar(scale))
-
-      if (camera instanceof THREE.PerspectiveCamera) {
-        const fov = camera.fov * (Math.PI / 180)
-        const distance = Math.abs(maxDim / Math.sin(fov / 2)) * 1.5
-        camera.position.set(0, 0, distance)
-        camera.lookAt(0, 0, 0)
-        camera.updateProjectionMatrix()
-      }
-
-      modelRef.current.traverse((child) => {
-        if (child instanceof THREE.Mesh) {
-          child.castShadow = true
-          child.receiveShadow = true
-        }
-      })
-    }
-  }, [camera])
-
-  return <primitive ref={modelRef} object={scene} />
-}
-
-function LoadingCube() {
-  const meshRef = useRef<THREE.Mesh>(null)
-
-  useFrame(() => {
-    if (meshRef.current) {
-      meshRef.current.rotation.x += 0.01
-      meshRef.current.rotation.y += 0.01
-    }
-  })
-
-  return (
-    <mesh ref={meshRef} castShadow>
-      <boxGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial color="blue" />
-    </mesh>
-  )
+  return <primitive object={scene} />
 }
 
 function Lighting() {
-  return (
-    <>
-      <ambientLight intensity={0.5} />
-      <directionalLight
-        position={[5, 5, 5]}
-        intensity={1}
-        castShadow
-        shadow-mapSize-width={1024}
-        shadow-mapSize-height={1024}
-      />
-      <directionalLight position={[-5, 5, 5]} intensity={0.5} />
-      <directionalLight position={[0, 5, -5]} intensity={0.5} />
-      <pointLight position={[0, 0, 5]} intensity={0.5} />
-    </>
-  )
+  const { scene } = useThree()
+  useEffect(() => {
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5)
+    scene.add(ambientLight)
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5)
+    directionalLight.position.set(1, 2, 3)
+    scene.add(directionalLight)
+  }, [scene])
+  return null
 }
 
-interface Model3DViewerProps {
-  title?: string
-  url?: string
-  color?: string
-  isSimpleShape?: boolean
-}
-
-export function Model3DViewer({ title, url, color, isSimpleShape = false }: Model3DViewerProps) {
+export function Model3DViewer({ title, url, color = "white", isSimpleShape = false }: Model3DViewerProps) {
   const [modelUrl, setModelUrl] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [enablePostProcessing, setEnablePostProcessing] = useState(true)
@@ -131,7 +88,20 @@ export function Model3DViewer({ title, url, color, isSimpleShape = false }: Mode
             <Environment preset="studio" />
             {enablePostProcessing && (
               <EffectComposer>
-                <SSAO radius={0.1} intensity={ssaoIntensity} luminanceInfluence={0.1} color="black" />
+                <SSAO
+                  blendFunction={BlendFunction.MULTIPLY}
+                  samples={30}
+                  radius={0.1}
+                  intensity={ssaoIntensity}
+                  luminanceInfluence={0.1}
+                  color={new THREE.Color("black")}
+                  worldDistanceThreshold={0.5}
+                  worldDistanceFalloff={0.1}
+                  worldProximityThreshold={0.1}
+                  worldProximityFalloff={0.1}
+                  distanceScaling={true}
+                  depthAwareUpsampling={true}
+                />
                 <Bloom luminanceThreshold={0.5} intensity={bloomIntensity} levels={9} mipmapBlur />
                 <DepthOfField focusDistance={0} focalLength={dofFocalLength} bokehScale={2} height={480} />
               </EffectComposer>
