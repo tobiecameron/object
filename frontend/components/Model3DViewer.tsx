@@ -64,8 +64,15 @@ function ComplexModel({ url }: { url: string }) {
     if ((child as THREE.Mesh).isMesh) {
       const meshChild = child as THREE.Mesh
       if (meshChild.material && 'envMap' in meshChild.material) {
-        meshChild.material.envMap = envMap
-        meshChild.material.needsUpdate = true
+        if (Array.isArray(meshChild.material)) {
+          meshChild.material.forEach((material) => {
+            material.envMap = envMap
+            material.needsUpdate = true
+          })
+        } else {
+          meshChild.material.envMap = envMap
+          meshChild.material.needsUpdate = true
+        }
       }
     }
   })
