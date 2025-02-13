@@ -2,13 +2,13 @@
 
 import { Suspense, useState, useEffect, useRef } from "react"
 import { Canvas, useFrame, useThree } from "@react-three/fiber"
-import { OrbitControls, useGLTF } from "@react-three/drei"
+import { OrbitControls, useGLTF, Environment } from "@react-three/drei"
 import { ErrorBoundary } from "react-error-boundary"
 import * as THREE from "three"
 
-function SimpleShape({ color = "hotpink" }: { color?: string }) {
+function SimpleShape({ color = "hsl(var(--background))" }: { color?: string }) {
   return (
-    <mesh>
+    <mesh castShadow>
       <boxGeometry args={[1, 1, 1]} />
       <meshStandardMaterial color={color} />
     </mesh>
@@ -37,24 +37,16 @@ function ComplexModel({ url }: { url: string }) {
         camera.position.set(0, 0, distance)
         camera.lookAt(0, 0, 0)
         camera.updateProjectionMatrix()
-      } else {
-        console.warn("Camera is not a PerspectiveCamera. Skipping camera adjustment.")
       }
 
-      console.log("Model loaded and adjusted:", {
-        scale,
-        position: modelRef.current.position,
-        cameraPosition: camera.position,
+      modelRef.current.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          child.castShadow = true
+          child.receiveShadow = true
+        }
       })
     }
   }, [camera])
-
-  useFrame(() => {
-    if (modelRef.current) {
-      console.log("Model position:", modelRef.current.position)
-      console.log("Model scale:", modelRef.current.scale)
-    }
-  })
 
   return <primitive ref={modelRef} object={scene} />
 }
@@ -70,10 +62,28 @@ function LoadingCube() {
   })
 
   return (
-    <mesh ref={meshRef}>
+    <mesh ref={meshRef} castShadow>
       <boxGeometry args={[1, 1, 1]} />
       <meshStandardMaterial color="blue" />
     </mesh>
+  )
+}
+
+function Lighting() {
+  return (
+    <>
+      <ambientLight intensity={0.5} />
+      <directionalLight
+        position={[5, 5, 5]}
+        intensity={1}
+        castShadow
+        shadow-mapSize-width={1024}
+        shadow-mapSize-height={1024}
+      />
+      <directionalLight position={[-5, 5, 5]} intensity={0.5} />
+      <directionalLight position={[0, 5, -5]} intensity={0.5} />
+      <pointLight position={[0, 0, 5]} intensity={0.5} />
+    </>
   )
 }
 
@@ -86,38 +96,41 @@ interface Model3DViewerProps {
 
 export function Model3DViewer({ title, url, color, isSimpleShape = false }: Model3DViewerProps) {
   const [modelUrl, setModelUrl] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (url) {
-      console.log("Model3DViewer: Received URL:", url)
       setModelUrl(url)
     }
   }, [url])
 
   return (
-    <div className="w-full h-[80vh] relative bg-white">
+    <div className="fixed inset-0 z-[-1]">
       <ErrorBoundary
-        fallbackRender={({ error }: { error: Error }) => (
+        fallbackRender={({ error }) => (
           <div className="absolute inset-0 flex items-center justify-center bg-red-100 text-red-500 p-4 text-center">
             Error loading 3D model: {error.message}
           </div>
         )}
-        onError={(error: Error) => {
-          console.error("Error in Model3DViewer:", error.message, error.stack)
+        onError={(error) => {
+          console.error("Error in Model3DViewer:", error)
+          setError(error.message)
         }}
       >
-        <Canvas camera={{ position: [0, 0, 5], fov: 50 }}>
+        <Canvas shadows camera={{ position: [0, 0, 5], fov: 50 }}>
           <Suspense fallback={<LoadingCube />}>
-            <ambientLight intensity={0.5} />
-            <directionalLight position={[10, 10, 5]} intensity={1} />
-            {isSimpleShape || !modelUrl ? <SimpleShape color={color} /> : <ComplexModel url={modelUrl} />}
+            <Lighting />
+            {isSimpleShape || !modelUrl || error ? <SimpleShape color={color} /> : <ComplexModel url={modelUrl} />}
             <OrbitControls enableZoom={true} />
-            <axesHelper args={[5]} />
-            <gridHelper args={[10, 10]} />
+            <Environment preset="studio" />
           </Suspense>
         </Canvas>
       </ErrorBoundary>
-      {title && <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white p-2 text-center">{title}</div>}
+      {title && (
+        <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white p-2 text-center pointer-events-none">
+          {title}
+        </div>
+      )}
     </div>
   )
 }

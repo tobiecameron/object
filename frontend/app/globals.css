@@ -73,5 +73,23 @@
   body {
     @apply bg-background text-foreground;
   }
+  html,
+  body,
+  #__next {
+    height: 100%;
+    overflow: hidden;
+  }
+}
+
+@layer components {
+  .content-wrapper {
+    position: relative;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  .content-wrapper > * {
+    pointer-events: auto;
+  }
 }
 
