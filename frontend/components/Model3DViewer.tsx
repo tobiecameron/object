@@ -40,7 +40,7 @@ function SimpleShape({ color }: { color: string }) {
   }, [scene])
 
   return (
-    <mesh position={[0, -0.5, 0]}>
+    <mesh position={[0, 0, 0]}>
       <sphereGeometry args={[1, 32, 32]} />
       <meshStandardMaterial color={color} envMap={envMap} />
     </mesh>
@@ -51,6 +51,7 @@ function ComplexModel({ url }: { url: string }) {
   const { scene } = useGLTF(url)
   const { scene: threeScene } = useThree()
   const [envMap, setEnvMap] = useState<THREE.Texture | null>(null)
+  const [position, setPosition] = useState<[number, number, number]>([0, 0, 0])
 
   useEffect(() => {
     new THREE.TextureLoader().load('/zwartkops_curve_afternoon_4k.exr', (texture) => {
@@ -59,6 +60,13 @@ function ComplexModel({ url }: { url: string }) {
       threeScene.environment = texture
     })
   }, [threeScene])
+
+  useEffect(() => {
+    if (scene) {
+      const box = new THREE.Box3().setFromObject(scene)
+      setPosition([0, -box.min.y, 0])
+    }
+  }, [scene])
 
   scene.traverse((child: THREE.Object3D) => {
     if ((child as THREE.Mesh).isMesh) {
@@ -80,7 +88,7 @@ function ComplexModel({ url }: { url: string }) {
     }
   })
 
-  return <primitive object={scene} position={[0, -0.5, 0]} />
+  return <primitive object={scene} position={position} />
 }
 
 function Lighting() {
@@ -101,6 +109,27 @@ function ShadowPlane() {
     <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
       <planeGeometry args={[10, 10]} />
       <shadowMaterial opacity={0.5} />
+    </mesh>
+  )
+}
+
+function DynamicSurface() {
+  const [texture, setTexture] = useState<THREE.Texture | null>(null)
+  const [position, setPosition] = useState<[number, number, number]>([0, 0, 0])
+
+  useEffect(() => {
+    new THREE.TextureLoader().load('/road_surface.jpg', (texture) => {
+      texture.wrapS = THREE.RepeatWrapping
+      texture.wrapT = THREE.RepeatWrapping
+      texture.repeat.set(4, 4)
+      setTexture(texture)
+    })
+  }, [])
+
+  return (
+    <mesh rotation={[-Math.PI / 2, 0, 0]} position={position}>
+      <planeGeometry args={[10, 10]} />
+      {texture && <meshBasicMaterial map={texture} />}
     </mesh>
   )
 }
@@ -141,6 +170,7 @@ export function Model3DViewer({ title, url, color = "white", isSimpleShape = fal
         <Canvas shadows camera={{ position: [0, 2, 5], fov: 50 }}>
           <Suspense fallback={<LoadingCube />}>
             <Lighting />
+            <DynamicSurface />
             <ShadowPlane />
             {isSimpleShape || !modelUrl || error ? <SimpleShape color={color} /> : <ComplexModel url={modelUrl} />}
             <OrbitControls enableZoom={true} />
@@ -173,17 +203,19 @@ export function Model3DViewer({ title, url, color = "white", isSimpleShape = fal
           {title}
         </div>
       )}
-      <ViewerSettings
-        enablePostProcessing={enablePostProcessing}
-        ssaoIntensity={ssaoIntensity}
-        bloomIntensity={bloomIntensity}
-        dofFocalLength={dofFocalLength}
-        setEnablePostProcessing={setEnablePostProcessing}
-        setSsaoIntensity={setSsaoIntensity}
-        setBloomIntensity={setBloomIntensity}
-        setDofFocalLength={setDofFocalLength}
-      />
-      <div>
+      <div className="absolute bottom-0 right-0 z-10 p-4">
+        <ViewerSettings
+          enablePostProcessing={enablePostProcessing}
+          ssaoIntensity={ssaoIntensity}
+          bloomIntensity={bloomIntensity}
+          dofFocalLength={dofFocalLength}
+          setEnablePostProcessing={setEnablePostProcessing}
+          setSsaoIntensity={setSsaoIntensity}
+          setBloomIntensity={setBloomIntensity}
+          setDofFocalLength={setDofFocalLength}
+        />
+      </div>
+      <div className="absolute bottom-0 left-0 p-4">
         <p>Sanity Project ID: {sanityProjectId}</p>
         <p>Sanity Dataset: {sanityDataset}</p>
       </div>
