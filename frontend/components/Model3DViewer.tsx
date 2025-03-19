@@ -47,7 +47,7 @@ function SimpleShape({ color }: { color: string }) {
 
 function ComplexModel({ url }: { url: string }) {
   const { scene } = useGLTF(url)
-  const { scene: threeScene } = useThree()
+  const { scene: threeScene, camera } = useThree()
   const [position, setPosition] = useState<[number, number, number]>([0, 0, 0])
 
   useEffect(() => {
@@ -58,28 +58,24 @@ function ComplexModel({ url }: { url: string }) {
 
   useEffect(() => {
     if (scene) {
+      // Calculate the bounding box of the model
       const box = new THREE.Box3().setFromObject(scene)
-      setPosition([0, -box.min.y, 0])
-    }
-  }, [scene])
+      const center = new THREE.Vector3()
+      box.getCenter(center)
 
-  scene.traverse((child: THREE.Object3D) => {
-    if ((child as THREE.Mesh).isMesh) {
-      const meshChild = child as THREE.Mesh
-      if (meshChild.material) {
-        if (Array.isArray(meshChild.material)) {
-          meshChild.material.forEach((material) => {
-            if (material instanceof THREE.MeshStandardMaterial || material instanceof THREE.MeshPhysicalMaterial) {
-              material.needsUpdate = true
-            }
-          })
-        } else {
-          const material = meshChild.material as THREE.MeshStandardMaterial | THREE.MeshPhysicalMaterial
-          material.needsUpdate = true
-        }
-      }
+      // Center the model
+      scene.position.sub(center)
+
+      // Adjust the camera position based on the bounding box size
+      const size = box.getSize(new THREE.Vector3())
+      const maxDim = Math.max(size.x, size.y, size.z)
+      const fov = camera.fov * (Math.PI / 180) // Convert FOV to radians
+      const distance = maxDim / (2 * Math.tan(fov / 2))
+
+      camera.position.set(center.x, center.y, distance + size.z)
+      camera.lookAt(center)
     }
-  })
+  }, [scene, camera])
 
   return <primitive object={scene} position={position} />
 }
@@ -177,7 +173,7 @@ export function Model3DViewer({ title, url, color = "white", isSimpleShape = fal
             <ShadowPlane />
             {isSimpleShape || !modelUrl || error ? <SimpleShape color={color} /> : <ComplexModel url={modelUrl} />}
             <OrbitControls enableZoom={true} />
-            {/* <Environment files="/zwartkops_curve_afternoon_4k.exr" background /> */}
+            <Environment files="/TCom_NorwayForest_2K_hdri_sphere.exr" background />
             {enablePostProcessing && (
               <EffectComposer>
                 <SSAO
