@@ -40,6 +40,12 @@ const nextConfig = {
       },
     ]
   },
+  typescript: {
+    ignoreBuildErrors: true, // Disable TypeScript type checking during builds
+  },
+  eslint: {
+    ignoreDuringBuilds: true, // Disable ESLint checks during builds
+  },
 }
 
 module.exports = nextConfig

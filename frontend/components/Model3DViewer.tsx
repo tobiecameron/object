@@ -101,10 +101,6 @@ function ShadowPlane() {
   )
 }
 
-function DynamicSurface({ position }: { position: [number, number, number] }) {
-  return null
-}
-
 export function Model3DViewer({ title, url, color = "white", isSimpleShape = false }: Model3DViewerProps) {
   const [modelUrl, setModelUrl] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -126,7 +122,7 @@ export function Model3DViewer({ title, url, color = "white", isSimpleShape = fal
     if (modelUrl) {
       const loader = new GLTFLoader()
       loader.load(modelUrl, (gltf) => {
-        const box = new THREE.Box3().setFromObject(gltf.scene)
+        new THREE.Box3().setFromObject(gltf.scene)
       })
     }
   }, [modelUrl])
