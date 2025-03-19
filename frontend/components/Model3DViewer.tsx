@@ -107,7 +107,7 @@ export function Model3DViewer({ title, url, color = "white", isSimpleShape = fal
   const [enablePostProcessing, setEnablePostProcessing] = useState(true)
   const [ssaoIntensity, setSsaoIntensity] = useState(150)
   const [bloomIntensity, setBloomIntensity] = useState(1.5)
-  const [dofFocalLength, setDofFocalLength] = useState(0.02)
+  const [dofFocalLength, setDofFocalLength] = useState(0.08) // Updated default value
 
   useEffect(() => {
     const envModelUrl = process.env.NEXT_PUBLIC_MODEL_URL
