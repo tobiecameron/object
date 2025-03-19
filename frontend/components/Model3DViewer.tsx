@@ -7,6 +7,7 @@ import { EffectComposer, SSAO, Bloom, DepthOfField } from "@react-three/postproc
 import { BlendFunction } from "postprocessing"
 import { ErrorBoundary } from "react-error-boundary"
 import * as THREE from "three"
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader"
 import ViewerSettings from "./ViewerSettings"
 
 type Model3DViewerProps = {
@@ -113,9 +114,8 @@ function ShadowPlane() {
   )
 }
 
-function DynamicSurface() {
+function DynamicSurface({ position }: { position: [number, number, number] }) {
   const [texture, setTexture] = useState<THREE.Texture | null>(null)
-  const [position, setPosition] = useState<[number, number, number]>([0, 0, 0])
 
   useEffect(() => {
     new THREE.TextureLoader().load('/road_surface.jpg', (texture) => {
@@ -141,6 +141,7 @@ export function Model3DViewer({ title, url, color = "white", isSimpleShape = fal
   const [ssaoIntensity, setSsaoIntensity] = useState(150)
   const [bloomIntensity, setBloomIntensity] = useState(1.5)
   const [dofFocalLength, setDofFocalLength] = useState(0.02)
+  const [surfacePosition, setSurfacePosition] = useState<[number, number, number]>([0, 0, 0])
 
   useEffect(() => {
     const envModelUrl = process.env.NEXT_PUBLIC_MODEL_URL
@@ -150,6 +151,16 @@ export function Model3DViewer({ title, url, color = "white", isSimpleShape = fal
       setModelUrl(envModelUrl)
     }
   }, [url])
+
+  useEffect(() => {
+    if (modelUrl) {
+      const loader = new GLTFLoader()
+      loader.load(modelUrl, (gltf) => {
+        const box = new THREE.Box3().setFromObject(gltf.scene)
+        setSurfacePosition([0, -box.min.y, 0])
+      })
+    }
+  }, [modelUrl])
 
   const sanityProjectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID
   const sanityDataset = process.env.NEXT_PUBLIC_SANITY_DATASET
@@ -170,7 +181,7 @@ export function Model3DViewer({ title, url, color = "white", isSimpleShape = fal
         <Canvas shadows camera={{ position: [0, 2, 5], fov: 50 }}>
           <Suspense fallback={<LoadingCube />}>
             <Lighting />
-            <DynamicSurface />
+            <DynamicSurface position={surfacePosition} />
             <ShadowPlane />
             {isSimpleShape || !modelUrl || error ? <SimpleShape color={color} /> : <ComplexModel url={modelUrl} />}
             <OrbitControls enableZoom={true} />
