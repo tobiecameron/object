@@ -30,20 +30,17 @@ function LoadingCube() {
 
 function SimpleShape({ color }: { color: string }) {
   const { scene } = useThree()
-  const [envMap, setEnvMap] = useState<THREE.Texture | null>(null)
 
   useEffect(() => {
-    new THREE.TextureLoader().load('/zwartkops_curve_afternoon_4k.exr', (texture) => {
-      texture.mapping = THREE.EquirectangularReflectionMapping
-      setEnvMap(texture)
-      scene.environment = texture
-    })
+    const gradientColor = new THREE.Color("rgb(173, 216, 230)") // Pale blue
+    scene.background = gradientColor
+    scene.environment = gradientColor
   }, [scene])
 
   return (
     <mesh position={[0, 0, 0]}>
       <sphereGeometry args={[1, 32, 32]} />
-      <meshStandardMaterial color={color} envMap={envMap} />
+      <meshStandardMaterial color={color} />
     </mesh>
   )
 }
@@ -51,15 +48,12 @@ function SimpleShape({ color }: { color: string }) {
 function ComplexModel({ url }: { url: string }) {
   const { scene } = useGLTF(url)
   const { scene: threeScene } = useThree()
-  const [envMap, setEnvMap] = useState<THREE.Texture | null>(null)
   const [position, setPosition] = useState<[number, number, number]>([0, 0, 0])
 
   useEffect(() => {
-    new THREE.TextureLoader().load('/zwartkops_curve_afternoon_4k.exr', (texture) => {
-      texture.mapping = THREE.EquirectangularReflectionMapping
-      setEnvMap(texture)
-      threeScene.environment = texture
-    })
+    const gradientColor = new THREE.Color("rgb(173, 216, 230)") // Pale blue
+    threeScene.background = gradientColor
+    threeScene.environment = gradientColor
   }, [threeScene])
 
   useEffect(() => {
@@ -76,13 +70,11 @@ function ComplexModel({ url }: { url: string }) {
         if (Array.isArray(meshChild.material)) {
           meshChild.material.forEach((material) => {
             if (material instanceof THREE.MeshStandardMaterial || material instanceof THREE.MeshPhysicalMaterial) {
-              material.envMap = envMap
               material.needsUpdate = true
             }
           })
         } else {
           const material = meshChild.material as THREE.MeshStandardMaterial | THREE.MeshPhysicalMaterial
-          material.envMap = envMap
           material.needsUpdate = true
         }
       }
@@ -181,11 +173,11 @@ export function Model3DViewer({ title, url, color = "white", isSimpleShape = fal
         <Canvas shadows camera={{ position: [0, 2, 5], fov: 50 }}>
           <Suspense fallback={<LoadingCube />}>
             <Lighting />
-            <DynamicSurface position={surfacePosition} />
+            {/* <DynamicSurface position={surfacePosition} /> */}
             <ShadowPlane />
             {isSimpleShape || !modelUrl || error ? <SimpleShape color={color} /> : <ComplexModel url={modelUrl} />}
             <OrbitControls enableZoom={true} />
-            <Environment files="/zwartkops_curve_afternoon_4k.exr" background />
+            {/* <Environment files="/zwartkops_curve_afternoon_4k.exr" background /> */}
             {enablePostProcessing && (
               <EffectComposer>
                 <SSAO
