@@ -48,7 +48,6 @@ function SimpleShape({ color }: { color: string }) {
 function ComplexModel({ url }: { url: string }) {
   const { scene } = useGLTF(url)
   const { scene: threeScene, camera } = useThree()
-  const [position, setPosition] = useState<[number, number, number]>([0, 0, 0])
 
   useEffect(() => {
     const gradientColor = new THREE.Color("rgb(173, 216, 230)") // Pale blue
@@ -77,7 +76,7 @@ function ComplexModel({ url }: { url: string }) {
     }
   }, [scene, camera])
 
-  return <primitive object={scene} position={position} />
+  return <primitive object={scene} />
 }
 
 function Lighting() {
@@ -103,23 +102,7 @@ function ShadowPlane() {
 }
 
 function DynamicSurface({ position }: { position: [number, number, number] }) {
-  const [texture, setTexture] = useState<THREE.Texture | null>(null)
-
-  useEffect(() => {
-    new THREE.TextureLoader().load('/road_surface.jpg', (texture) => {
-      texture.wrapS = THREE.RepeatWrapping
-      texture.wrapT = THREE.RepeatWrapping
-      texture.repeat.set(4, 4)
-      setTexture(texture)
-    })
-  }, [])
-
-  return (
-    <mesh rotation={[-Math.PI / 2, 0, 0]} position={position}>
-      <planeGeometry args={[10, 10]} />
-      {texture && <meshBasicMaterial map={texture} />}
-    </mesh>
-  )
+  return null
 }
 
 export function Model3DViewer({ title, url, color = "white", isSimpleShape = false }: Model3DViewerProps) {
@@ -129,7 +112,6 @@ export function Model3DViewer({ title, url, color = "white", isSimpleShape = fal
   const [ssaoIntensity, setSsaoIntensity] = useState(150)
   const [bloomIntensity, setBloomIntensity] = useState(1.5)
   const [dofFocalLength, setDofFocalLength] = useState(0.02)
-  const [surfacePosition, setSurfacePosition] = useState<[number, number, number]>([0, 0, 0])
 
   useEffect(() => {
     const envModelUrl = process.env.NEXT_PUBLIC_MODEL_URL
@@ -145,7 +127,6 @@ export function Model3DViewer({ title, url, color = "white", isSimpleShape = fal
       const loader = new GLTFLoader()
       loader.load(modelUrl, (gltf) => {
         const box = new THREE.Box3().setFromObject(gltf.scene)
-        setSurfacePosition([0, -box.min.y, 0])
       })
     }
   }, [modelUrl])
