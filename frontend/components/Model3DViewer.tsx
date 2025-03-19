@@ -106,7 +106,7 @@ export function Model3DViewer({ title, url, color = "white", isSimpleShape = fal
   const [error, setError] = useState<string | null>(null)
   const [enablePostProcessing, setEnablePostProcessing] = useState(true)
   const [ssaoIntensity, setSsaoIntensity] = useState(150)
-  const [bloomIntensity, setBloomIntensity] = useState(1.5)
+  const [bloomIntensity, setBloomIntensity] = useState(0.2) // Updated default value
   const [dofFocalLength, setDofFocalLength] = useState(0.08) // Updated default value
 
   useEffect(() => {
