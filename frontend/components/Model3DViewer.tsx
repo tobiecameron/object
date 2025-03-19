@@ -69,7 +69,7 @@ function ComplexModel({ url }: { url: string }) {
       const size = box.getSize(new THREE.Vector3())
       const maxDim = Math.max(size.x, size.y, size.z)
       const fov = camera.fov * (Math.PI / 180) // Convert FOV to radians
-      const distance = maxDim / (2 * Math.tan(fov / 2))
+      const distance = (maxDim / (2 * Math.tan(fov / 2))) / 6 // Zoom in by 8 times
 
       camera.position.set(center.x, center.y, distance + size.z)
       camera.lookAt(center)
