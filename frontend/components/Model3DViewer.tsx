@@ -150,7 +150,7 @@ export function Model3DViewer({ title, url, color = "white", isSimpleShape = fal
             <ShadowPlane />
             {isSimpleShape || !modelUrl || error ? <SimpleShape color={color} /> : <ComplexModel url={modelUrl} />}
             <OrbitControls enableZoom={true} />
-            <Environment files="/TCom_NorwayForest_2K_hdri_sphere.exr" background />
+            <Environment files="/TCom_NorwayForest_8K_hdri_sphere_tone.jpg" background />
             {enablePostProcessing && (
               <EffectComposer>
                 <SSAO
