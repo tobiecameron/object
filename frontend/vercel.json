@@ -10,12 +10,6 @@
       "headers": { "cache-control": "s-maxage=1, stale-while-revalidate" },
       "dest": "/$1"
     }
-  ],
-  "functions": {
-    "api/upload.js": {
-      "maxDuration": 60,
-      "memory": 512,
-      "maxSize": "100mb"
-    }
-  }
+  ]
 }
+
