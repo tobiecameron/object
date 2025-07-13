@@ -1,39 +1,51 @@
-import formidable from 'formidable';
-import fs from 'fs';
-import path from 'path';
-import unzipper from 'unzipper';
+'use client';
+import { useState } from 'react';
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+export default function UploadPage() {
+  const [slug, setSlug] = useState(null);
+  const [error, setError] = useState(null);
 
-const uploadDir = path.join(process.cwd(), 'public/models');
+  const handleUpload = async (e) => {
+    e.preventDefault();
+    setError(null);
+    const file = e.target.zip.files[0];
+    const slugName = e.target.slug.value || 'model';
 
-export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).end();
-  }
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('slug', slugName);
 
-  const form = formidable({ multiples: false, uploadDir, keepExtensions: true });
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData,
+    });
 
-  form.parse(req, async (err, fields, files) => {
-    if (err || !files.file) return res.status(500).json({ error: 'Upload failed' });
+    const data = await res.json();
+    if (res.ok) {
+      setSlug(data.slug);
+    } else {
+      setError(data.error || 'Upload failed');
+    }
+  };
 
-    const zipPath = files.file.filepath;
-    const slug = fields.slug || Date.now().toString();
-    const extractPath = path.join(uploadDir, slug);
-    fs.mkdirSync(extractPath, { recursive: true });
-
-    fs.createReadStream(zipPath)
-      .pipe(unzipper.Extract({ path: extractPath }))
-      .on('close', () => {
-        fs.unlinkSync(zipPath);
-        res.status(200).json({ success: true, slug });
-      })
-      .on('error', (e) => {
-        res.status(500).json({ error: 'Unzip failed', details: e.message });
-      });
-  });
+  return (
+    <div style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
+      <h1>Upload 3D Model ZIP</h1>
+      <form onSubmit={handleUpload}>
+        <input type="text" name="slug" placeholder="model-name" required />
+        <input type="file" name="zip" accept=".zip" required />
+        <button type="submit">Upload</button>
+      </form>
+      {slug && (
+        <p>
+          ✅ Model extracted to: <code>/models/{slug}/</code>
+        </p>
+      )}
+      {error && (
+        <p style={{ color: 'red' }}>
+          ❌ Error: {error}
+        </p>
+      )}
+    </div>
+  );
 }
