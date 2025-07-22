@@ -11,8 +11,8 @@
   "dependencies": {
     "@portabletext/react": "^3.0.11",
     "@portabletext/types": "^2.0.13",
-    "@react-three/drei": "^9.92.7",
-    "@react-three/fiber": "^8.15.12",
+    "@react-three/drei": "^9.122.0",
+    "@react-three/fiber": "^8.18.0",
     "@react-three/postprocessing": "^2.19.1",
     "@sanity/client": "^6.10.0",
     "@sanity/image-url": "^1.0.2",
@@ -49,4 +49,3 @@
     "rimraf": "^5.0.5"
   }
 }
-
